@@ -1,0 +1,19 @@
+org 0000h
+mov scon, #50h     ; UART Mode 1, 8-bit UART
+mov tmod, #20h     ; Timer 1, Mode 2 (8-bit auto-reload)
+mov th1, #0fdh     ; Baud rate 9600
+setb tr1           ; Start Timer 1
+mov dptr, #message ; Load message address
+transmit:
+  clr a
+next_char:
+  movc a, @a+dptr  ; Load character from message
+  jz transmit      ; Repeat on null character
+  mov sbuf, a      ; Send data
+wait_transmit:
+  jnb ti, wait_transmit ; Wait for transmission to complete
+  clr ti           ; Clear transmit flag
+  inc dptr         ; Next character
+  sjmp next_char    ; Repeat
+message: db 'Embedded Systems & IOT', 00h
+end
